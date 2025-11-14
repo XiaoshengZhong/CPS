@@ -1,0 +1,185 @@
+#include <AccelStepper.h>
+#define STEP_PER_REVOLUTION 2048
+
+AccelStepper stepper_x(4, 7, 5, 6, 4);
+AccelStepper stepper_y(4, 11, 9, 10, 8);
+
+long xCurrent, xTarget, yCurrent, yTarget;
+char receivedCommand;
+
+void setup() {
+  Serial.begin(9600);
+
+  stepper_x.setAcceleration(400.0);
+  stepper_x.setMaxSpeed(550.0);
+  stepper_y.setAcceleration(400.0);
+  stepper_y.setMaxSpeed(550.0);
+
+  Serial.println("ready");
+
+  pinMode(12, OUTPUT);
+  pinMode(3, OUTPUT);
+}
+
+void loop() {
+  if (Serial.available() > 0) {
+    receivedCommand = Serial.read();
+
+    switch (receivedCommand) {
+
+      case '1': // X move left
+        stepper_x.move(-250);
+        break;
+
+      case '2': // X move right
+        stepper_x.move(250);
+        break;
+
+      case '3': // Y move down
+        stepper_y.move(1000);
+        break;
+
+      case '4': // Y move up
+        stepper_y.move(-1000);
+        break;
+
+      case '5': // Stop motors
+        xCurrent = stepper_x.currentPosition();
+        stepper_x.moveTo(xCurrent);
+        yCurrent = stepper_y.currentPosition();
+        stepper_y.moveTo(yCurrent);
+        break;
+
+      case '6': // Square
+      {
+        xCurrent = stepper_x.currentPosition();
+        yCurrent = stepper_y.currentPosition();
+
+        xTarget = xCurrent + 125;
+        stepper_x.runToNewPosition(xTarget);
+        yTarget = yCurrent + 500;
+        stepper_y.runToNewPosition(yTarget);
+
+        digitalWrite(12, HIGH);
+        digitalWrite(3, HIGH);
+        delay(1000);
+
+        xTarget = xCurrent - 125;
+        stepper_x.runToNewPosition(xTarget);
+        yTarget = yCurrent - 500;
+        stepper_y.runToNewPosition(yTarget);
+
+        xTarget = xCurrent + 125;
+        stepper_x.runToNewPosition(xTarget);
+        yTarget = yCurrent + 500;
+        stepper_y.runToNewPosition(yTarget);
+
+        digitalWrite(12, LOW);
+        digitalWrite(3, LOW);
+      }
+      break;
+
+      case '7': // Triangle
+      {
+        
+        xTarget = xCurrent + 125;
+        stepper_x.runToNewPosition(xTarget);
+        yTarget = yCurrent + 300;
+        stepper_y.runToNewPosition(yTarget);
+
+        digitalWrite(12, HIGH);
+        digitalWrite(3, HIGH);
+        delay(1000);
+
+        long xStart = stepper_x.currentPosition();
+        long yStart = stepper_y.currentPosition();
+
+        long sideX = 300;
+        long sideY = 700;
+
+        const float maxSpeedX = 80.0;
+        const float maxSpeedY = 400.0;
+        const float accelX = 100.0;
+        const float accelY = 450.0;
+
+        long xTarget[3] = {xStart, xStart + sideX, xStart + sideX / 2};
+        long yTarget[3] = {yStart, yStart, yStart + sideY};
+
+        stepper_x.setMaxSpeed(maxSpeedX);
+        stepper_x.setAcceleration(accelX);
+        stepper_y.setMaxSpeed(maxSpeedY);
+        stepper_y.setAcceleration(accelY);
+
+        for (int i = 0; i <= 3; i++) {
+          int next = i % 3;
+          stepper_x.moveTo(xTarget[next]);
+          stepper_y.moveTo(yTarget[next]);
+          while (stepper_x.distanceToGo() != 0 || stepper_y.distanceToGo() != 0) {
+            stepper_x.run();
+            stepper_y.run();
+          }
+        }
+        digitalWrite(12, HIGH);
+        digitalWrite(3, HIGH);
+      }
+      break;
+
+      case '8': // Circle
+      {
+        xTarget = xCurrent + 50;
+        stepper_x.runToNewPosition(xTarget);
+        yTarget = yCurrent + 50;
+        stepper_y.runToNewPosition(yTarget);
+
+        digitalWrite(12, HIGH);
+        digitalWrite(3, HIGH);
+        delay(1000);
+
+          long xStart = stepper_x.currentPosition();
+    long yStart = stepper_y.currentPosition();
+
+    long radiusX = 300;
+    long radiusY = 400;
+    const int points = 100;
+
+    const float maxSpeedX = 300.0;
+    const float maxSpeedY = 300.0;
+    const float accelX = 200.0;
+    const float accelY = 200.0;
+
+    stepper_x.setMaxSpeed(maxSpeedX);
+    stepper_x.setAcceleration(accelX);
+    stepper_y.setMaxSpeed(maxSpeedY);
+    stepper_y.setAcceleration(accelY);
+
+    // Set the circle center so the current position is the first point on the circumference
+    long xCenter = xStart - radiusX; // first point is at theta = 0
+    long yCenter = yStart;
+
+    for (int i = 0; i <= points; i++) {
+        float theta = 2.0 * PI * i / points;
+        long xTarget = xCenter + lround(radiusX * cos(theta));
+        long yTarget = yCenter + lround(radiusY * sin(theta));
+
+        stepper_x.moveTo(xTarget);
+        stepper_y.moveTo(yTarget);
+
+        while (stepper_x.distanceToGo() != 0 || stepper_y.distanceToGo() != 0) {
+            stepper_x.run();
+            stepper_y.run();
+          }
+        }
+        digitalWrite(12, LOW);
+        digitalWrite(3, LOW);
+      }
+      break;
+
+      default:
+        break;
+    }
+  }
+
+  // Continuous run to keep motors updated
+  stepper_x.run();
+  stepper_y.run();
+}

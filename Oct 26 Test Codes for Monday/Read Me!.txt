@@ -1,0 +1,36 @@
+Oct 26, codes to test for monday
+
+1) Test pins layout for 2 stepper motor + 1 solenoid
+This code is modified based on: 
+https://arduinogetstarted.com/tutorials/arduino-controls-28byj-48-stepper-motor-using-uln2003-driver
+When finished testing, we'll stay with the pin layout and setup settings for all the actuators. 
+	
+2) Test moving commands for 1 stepper motor: 
+This code is modified based on:
+When finished testing, we'll STAY with the same speed setting, and "case" based command structure for the future codes
+https://curiousscientist.tech/blog/arduino-accelstepper-tb6600-stepper-motor
+    "R" - Change speed, eg. type in R400
+    "A" - Keep Moving to Positive direction
+    "S" - Stop immediately
+    "D" - Keep Moving to Negative direction
+    "T" - Move to Positive direction, then move to negative direction at HALF SPEED 
+    enter two numbers behind for Positive steps and negative steps, eg "T500 250"
+    (As a test to draw shapes)
+
+
+Speed: 4sec at 
+stepper.setSpeed(600);	
+
+X stepper go down by 3, increase the solenoid hole diameter
+f
+
+Other topics to consider: 
+	- Check if we need calibration with Y axis:
+https://docs.arduino.cc/built-in-examples/control-structures/WhileStatementConditional
+	- Revisit the Test TWO example codes to understand acceleration - we'll need it to draw a circle:
+  https://curiousscientist.tech/blog/arduino-accelstepper-tb6600-stepper-motor
+	- BACK UP PLAN / Processing Codes: 
+		- Use camera to capture color of 100 pixels, sent to wek as 100 inputs, each input has 3 values
+		- Receive 2 outputs from wek, each output has 5 classes:
+			- Output (0) refers to the Moving Direction:
+			- Output (1) refers to drawing s
